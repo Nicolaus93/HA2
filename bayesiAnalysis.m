@@ -95,7 +95,14 @@ figure
 h = histfit(theta,50,'gamma');
 h(1).FaceColor = [.6 .8 1];
 
+%% displaying t distribution
+figure
+%t_dist = prod(t(3:6,:));
+t_dist = prod(t);
+histogram(t_dist);
+
 %% statistics
+% to change
 if size(t,1) == 3
     histogram(cand)
     str=sprintf('acceptance rate = %.3f, tau = %d', acc/M, tau);
