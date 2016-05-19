@@ -2,20 +2,22 @@ clear
 load('coal_mine.mat')
 
 %% data visualization
+% uncomment to visualize data:
 x = linspace(1851, 1963, length(coal_mine));
-%histogram(coal_mine);
+histogram(coal_mine,30); 
+title('British coal mine disasters')
 
 %% defining parameters
 hyperParam = 1;
-breakpoints = 3;
+breakpoints = 3; % change here the number of breakpoints
 d = breakpoints+1;
-ro = 0.1;
-acc = 0;
+ro = 0.05; % change here the value of rho
+acc = zeros(1,breakpoints);
 
 %% gibbs sampling with MH step
 
 N = 10000;
-burn_in = 2000;
+burn_in = 5000;
 M = N + burn_in;
 
 % time intervals
@@ -65,7 +67,7 @@ for j = 1:M-1
                     ft(lambda(:,j), t(:,j), nDis(:,j));
             if rand <= alpha
                 t(l,j+1) = cand;
-                acc = acc + 1;
+                acc(l-1) = acc(l-1) + 1;
             else
                 t(l,j+1) = t(l,j);
             end            
@@ -76,6 +78,7 @@ for j = 1:M-1
         
 end 
 
+acc = acc/M;
 tau = ceil(mean(t(:, burn_in:M),2));
 
 %% displaying lambda intensities
@@ -93,18 +96,34 @@ end
 %% displaying theta intensities
 figure
 h = histfit(theta,50,'gamma');
+title('theta distribution')
 h(1).FaceColor = [.6 .8 1];
 
-%% displaying t distribution
+%% displaying t samples
 figure
-%t_dist = prod(t(3:6,:));
-t_dist = prod(t);
-histogram(t_dist);
+for i = 2:size(t,1)-1
+    %figure
+    hold on
+    plot(t(i,:))
+    %str = sprintf('acceptance rate = %.3f, tau = %d', acc(i-1), tau(i));
+    %title(str)
+end
 
-%% statistics
-% to change
-if size(t,1) == 3
-    histogram(cand)
-    str=sprintf('acceptance rate = %.3f, tau = %d', acc/M, tau);
+%%
+figure
+for i = 2:size(t,1)-1      
+    hold on
+    histogram(t(i,burn_in:end),20)
+    str = sprintf('t distribution');
     title(str)
 end
+%% showing breakpoints
+
+figure
+hold on
+histogram(coal_mine,30)
+for i=2:size(t,1)-1
+    SP = tau(i);
+    line([SP SP], [0 15], 'Color', [1 0 0])
+end
+title('coal mine disasters')
